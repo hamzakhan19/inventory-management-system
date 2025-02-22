@@ -5,9 +5,10 @@ import {
   Navigate,
 } from "react-router-dom";
 import Login from "../pages/Login";
-import Signup from "../pages/Signup"; // ✅ Import Signup Page
+import Signup from "../pages/Signup";
 import Dashboard from "../pages/Dashboard";
 import Products from "../pages/Products";
+import Layout from "../components/Layout"; // ✅ New Layout
 import { useSelector } from "react-redux";
 import { RootState } from "../store/store";
 
@@ -20,25 +21,22 @@ const AppRoutes = () => {
   return (
     <Router>
       <Routes>
+        {/* ✅ Public Routes */}
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} /> {/* ✅ Signup Route */}
+        <Route path="/signup" element={<Signup />} />
+
+        {/* ✅ Private Routes with Navbar & Footer */}
         <Route
-          path="/dashboard"
           element={
             <PrivateRoute>
-              <Dashboard />
+              <Layout />
             </PrivateRoute>
           }
-        />
-        <Route
-          path="/products"
-          element={
-            <PrivateRoute>
-              <Products />
-            </PrivateRoute>
-          }
-        />
+        >
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/products" element={<Products />} />
+        </Route>
       </Routes>
     </Router>
   );

@@ -39,16 +39,18 @@ export const fetchProducts = createAsyncThunk(
   }
 );
 
-// ✅ Fix Delete Product API Call
 export const deleteProduct = createAsyncThunk(
   "products/deleteProduct",
   async (id: number, thunkAPI) => {
     try {
-      console.log("Deleting product ID:", id); // ✅ Debugging
-      await axios.delete(`${API_BASE_URL}/products/${id}`);
-      return id; // ✅ Return deleted product ID to remove from Redux store
+      console.log("🟥 Sending DELETE request for ID:", id); // ✅ Debugging
+      const response = await axios.delete(`${API_BASE_URL}/products/${id}`, {
+        headers: { "Content-Type": "application/json" }, // ✅ Ensure headers are set
+      });
+      console.log("✅ API Response:", response); // ✅ Log API response
+      return id;
     } catch (error) {
-      console.error("Delete failed:", error); // ✅ Debugging
+      console.error("❌ API Delete Failed:", error.response || error.message);
       return thunkAPI.rejectWithValue("Failed to delete product");
     }
   }

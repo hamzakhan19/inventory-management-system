@@ -19,6 +19,7 @@ import {
   Dialog,
   DialogActions,
   DialogTitle,
+  Typography,
 } from "@mui/material";
 import { Edit, Delete, Add } from "@mui/icons-material";
 import AddProductModal from "../components/AddProductModal";
@@ -33,86 +34,137 @@ const Products = () => {
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean;
     id: number | null;
-  }>({ open: false, id: null });
+  }>({
+    open: false,
+    id: null,
+  });
 
   useEffect(() => {
     dispatch(fetchProducts());
   }, [dispatch]);
 
-  const handleDelete = async () => {
-    if (deleteDialog.id) {
-      console.log("Attempting to delete product ID:", deleteDialog.id); // ✅ Debugging
-      await dispatch(deleteProduct(deleteDialog.id)).unwrap();
-      setDeleteDialog({ open: false, id: null });
-      dispatch(fetchProducts()); // ✅ Refresh list after deleting
+  const handleDelete = async (id?: number) => {
+    if (!id) {
+      console.error("❌ Product ID is undefined! Fix delete button.");
+      return;
+    }
+
+    console.log("🟥 Deleting product ID:", id);
+
+    try {
+      await dispatch(deleteProduct(id)).unwrap();
+      console.log("✅ Product deleted successfully!");
+      dispatch(fetchProducts());
+    } catch (error) {
+      console.error("❌ Failed to delete product:", error);
     }
   };
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Product List</h2>
+      {/* ✅ Page Header */}
+      <div className="flex justify-between items-center mb-6">
+        <Typography variant="h4" className="font-bold text-gray-800">
+          📦 Product List
+        </Typography>
         <Button
           variant="contained"
-          color="primary"
           startIcon={<Add />}
           onClick={() => {
             setSelectedProduct(null);
             setOpen(true);
+          }}
+          sx={{
+            backgroundColor: "#4CAF50",
+            "&:hover": { backgroundColor: "#388E3C" },
           }}
         >
           New Product
         </Button>
       </div>
 
+      {/* ✅ Loading & Error Handling */}
       {loading && <CircularProgress />}
-      {error && <p className="text-red-500">{error}</p>}
+      {error && <Typography className="text-red-500">{error}</Typography>}
 
+      {/* ✅ Styled Table */}
       <TableContainer component={Paper} className="shadow-lg rounded-lg">
         <Table>
           <TableHead>
-            <TableRow className="bg-gray-200">
-              <TableCell>#</TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>SKU</TableCell>
-              <TableCell>Category</TableCell>
-              <TableCell>Quantity</TableCell>
-              <TableCell>Price</TableCell>
-              <TableCell>Actions</TableCell>
+            <TableRow sx={{ backgroundColor: "#1976D2" }}>
+              {" "}
+              {/* Blue Background */}
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>
+                #
+              </TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>
+                Name
+              </TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>
+                SKU
+              </TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>
+                Category
+              </TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>
+                Quantity
+              </TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>
+                Price
+              </TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>
+                Actions
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {products.map((product, index) => (
-              <TableRow key={product.id || index} className="hover:bg-gray-100">
-                <TableCell>{index + 1}</TableCell>
-                <TableCell>{product.Name}</TableCell>
-                <TableCell>{product.SKU}</TableCell>
-                <TableCell>{product.Category}</TableCell>
-                <TableCell>{product.Quantity}</TableCell>
-                <TableCell>
-                  ${product.Price ? product.Price.toFixed(2) : "0.00"}
-                </TableCell>
-                <TableCell>
-                  <IconButton
-                    color="primary"
-                    onClick={() => {
-                      setSelectedProduct(product);
-                      setOpen(true);
-                    }}
-                  >
-                    <Edit />
-                  </IconButton>
-                  <IconButton
-                    color="error"
-                    onClick={() =>
-                      setDeleteDialog({ open: true, id: product.id })
-                    }
-                  >
-                    <Delete />
-                  </IconButton>
+            {products.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center py-4">
+                  <Typography variant="subtitle1" color="textSecondary">
+                    No products available.
+                  </Typography>
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              products.map((product, index) => (
+                <TableRow
+                  key={product.id || index}
+                  className="hover:bg-gray-100"
+                >
+                  <TableCell>{index + 1}</TableCell>
+                  <TableCell>{product.Name}</TableCell>
+                  <TableCell>{product.SKU}</TableCell>
+                  <TableCell>{product.Category}</TableCell>
+                  <TableCell>{product.Quantity}</TableCell>
+                  <TableCell>
+                    $
+                    {product.Price
+                      ? parseFloat(product.Price).toFixed(2)
+                      : "0.00"}
+                  </TableCell>
+                  <TableCell>
+                    <IconButton
+                      color="primary"
+                      onClick={() => {
+                        setSelectedProduct(product);
+                        setOpen(true);
+                      }}
+                    >
+                      <Edit />
+                    </IconButton>
+                    <IconButton
+                      color="error"
+                      onClick={() =>
+                        setDeleteDialog({ open: true, id: product.id })
+                      }
+                    >
+                      <Delete />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </TableContainer>
@@ -130,15 +182,31 @@ const Products = () => {
         open={deleteDialog.open}
         onClose={() => setDeleteDialog({ open: false, id: null })}
       >
-        <DialogTitle>Are you sure you want to delete this product?</DialogTitle>
+        <DialogTitle className="text-center">
+          🛑 Are you sure you want to delete this product?
+        </DialogTitle>
         <DialogActions>
           <Button
             onClick={() => setDeleteDialog({ open: false, id: null })}
-            color="primary"
+            sx={{
+              backgroundColor: "#1976D2",
+              color: "white",
+              "&:hover": { backgroundColor: "#115293" },
+            }}
           >
             Cancel
           </Button>
-          <Button onClick={handleDelete} color="error">
+          <Button
+            onClick={() => {
+              handleDelete(deleteDialog.id);
+              setDeleteDialog({ open: false, id: null });
+            }}
+            sx={{
+              backgroundColor: "#D32F2F",
+              color: "white",
+              "&:hover": { backgroundColor: "#B71C1C" },
+            }}
+          >
             Delete
           </Button>
         </DialogActions>

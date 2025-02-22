@@ -45,10 +45,17 @@ namespace ims.api.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteProduct(int id)
         {
-            bool deleted = await _productService.DeleteProductAsync(id);
-            if (!deleted)
-                return NotFound("Product not found");
+            Console.WriteLine($"🔹 Received DELETE request for ID: {id}"); // ✅ Log incoming request
 
+            bool deleted = await _productService.DeleteProductAsync(id);
+
+            if (!deleted)
+            {
+                Console.WriteLine("❌ Product not found!");
+                return NotFound("Product not found");
+            }
+
+            Console.WriteLine("✅ Product deleted successfully!");
             return NoContent();
         }
     }

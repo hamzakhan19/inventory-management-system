@@ -1,19 +1,33 @@
-import AuthForm from "../components/AuthForm";
-import AuthHeading from "../components/AuthHeading";
-import { useDispatch } from "react-redux";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "../features/auth/authSlice";
-import { AppDispatch } from "../store/store";
+import { RootState, AppDispatch } from "../store/store";
 import { Button, Card } from "@mui/material";
 import GoogleIcon from "@mui/icons-material/Google";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { googleLoginApi } from "../api/auth";
+import AuthForm from "../components/AuthForm";
+import AuthHeading from "../components/AuthHeading";
 
 const Login = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
+  const { token } = useSelector((state: RootState) => state.auth); // ✅ Get token from Redux
 
-  const handleLogin = (data: { email: string; password: string }) => {
-    dispatch(loginUser(data));
+  const handleLogin = async (data: { email: string; password: string }) => {
+    const result = await dispatch(loginUser(data)).unwrap();
+    if (result) {
+      console.log("✅ Login Successful:", result);
+      navigate("/dashboard"); // ✅ Redirect after login success
+    }
   };
+
+  // ✅ If user is already logged in, redirect to dashboard
+  useEffect(() => {
+    if (token) {
+      navigate("/dashboard");
+    }
+  }, [token, navigate]);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 p-4">
